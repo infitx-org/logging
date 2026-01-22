@@ -11,3 +11,10 @@ This document defines the requirements for handling sensitive data in logs to in
 - Full Credit Card / Bank Account Numbers (Mask: `****1234`)
 - Personally Identifiable Information (PII) like Names, Phone Numbers, Addresses (unless authorized and necessary for debugging in secure envs)
 - Authentication Tokens (Bearer tokens)
+
+## Compliance Exceptions
+
+Exceptions to these redaction rules for emergency debugging (e.g., "Break Glass" scenarios) must be handled via **Configuration** (e.g., temporary environment variable changes), never by code changes. 
+
+*   These exceptions must follow the organization's Incident Management process. 
+*   There should be no permanent code paths that bypass PII masking.
