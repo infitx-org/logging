@@ -26,7 +26,7 @@ The standard is broken down into the following sections:
 ## Quick Reference Summary
 
 | Level | OTel Severity | Production | Use Case | Example |
-|-------|---------------|-----------|----------|---------|------|
+|-------|---------------|-----------|----------|---------|
 | ERROR | 17-20 | ✅ Always | System/operation failures | Database connection lost |
 | WARN  | 13-16 | ✅ Always | Recoverable issues | Validation failure, retry attempt |
 | INFO  | 9-12  | ✅ Always | Business events | Transfer completed, service started |
