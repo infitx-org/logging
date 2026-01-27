@@ -4,7 +4,11 @@ This document defines the structure and field conventions for Mojaloop logs, ens
 
 ## OpenTelemetry Alignment
 
-This standard aligns with [OpenTelemetry Logs Data Model](https://opentelemetry.io/docs/specs/otel/logs/data-model/) to ensure:
+This standard aligns with the following OpenTelemetry specifications:
+*   [Logs Data Model](https://opentelemetry.io/docs/specs/otel/logs/data-model/)
+*   [Semantic Conventions (Attributes)](https://opentelemetry.io/docs/specs/semconv/)
+
+This alignment ensures:
 - Logs can be correlated with traces and metrics
 - Compatibility with OpenTelemetry collectors and backends
 - Standardized severity levels and structured format

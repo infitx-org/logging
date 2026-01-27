@@ -9,7 +9,8 @@ Mojaloop log levels map to OpenTelemetry SeverityNumber ranges for compatibility
 | Mojaloop Level | OTel SeverityNumber | OTel Range | Numeric Value |
 |----------------|---------------------|------------|---------------|
 | TRACE          | TRACE               | 1-4        | 1             |
-| DEBUG          | DEBUG               | 5-8        | 5             |
+| DEBUG          | DEBUG               | 5        | 5             |
+| VERBOSE        | INFO (Low-priority) | 6-8        | 7             |
 | INFO           | INFO                | 9-12       | 9             |
 | WARN           | WARN                | 13-16      | 13            |
 | ERROR          | ERROR               | 17-20      | 17            |
@@ -141,13 +142,10 @@ logger.warn(`API rate limit of ${limit} requests per ${period} reached for endpo
 ### INFO - Significant Business Events
 
 **When to use:**
-- Service startup/shutdown
-- Successful completion of major operations
+- Service startup/shutdown (Major lifecycle events)
+- Successful completion of major operations (Transfers)
 - State transitions (transfer approved, settlement completed)
-- Configuration loaded
-- Connection established/closed
-- Scheduled job execution
-- API request/response (at entry points only)
+- API request/response (Significant entry points only)
 - Authentication success
 
 **What to include:**
@@ -179,10 +177,29 @@ logger.info(`Service ${serviceName} v${version} started successfully on port ${p
 ```
 
 **Do NOT use for:**
-- Internal function calls
-- Loop iterations
-- Temporary variable values
-- Detailed operation steps (use DEBUG)
+- High frequency operational noise (use VERBOSE)
+- Internal function calls (use DEBUG)
+
+### VERBOSE - Operational High-Volume Events
+
+**When to use:**
+- Health checks and keep-alives (often sampled)
+- Minor configuration updates
+- Periodic background tasks that are routine
+- High-frequency API calls that are not "Significant Business Events"
+
+**What to include:**
+- Minimal context to verify activity
+- Status of routine check
+
+**Examples:**
+```javascript
+logger.verbose('Health check passed', {
+  operation: 'healthCheck',
+  uptime: process.uptime(),
+  memoryUsage: process.memoryUsage().heapUsed
+});
+```
 
 ### DEBUG - Detailed Operational Information
 
@@ -259,13 +276,16 @@ logger.trace(`Entering validateTransfer function with transfer ${transfer.id}, a
 
 ```
 Is the application unable to continue? 
-  YES → ERROR
+  YES → FATAL
 
 Can the application continue with degraded functionality?
   YES → WARN
 
-Is this a significant business event users/operators care about?
+Is this a significant business event (Transfer Completed)?
   YES → INFO
+
+Is this a routine operational event (Health Check)?
+  YES → VERBOSE
 
 Is this needed for troubleshooting but not in production?
   YES → DEBUG
@@ -285,6 +305,9 @@ The complexity and structure of logs depend on their level.
 *   **INFO**: Standard operational level. Logged by default in Production.
     *   Should describe *what* happened (business events).
     *   Should *not* describe *how* (internal implementation details).
+*   **VERBOSE**: Optional in Production.
+    *   Captures high-frequency noise like health checks.
+    *   Often sampled or disabled to save storage.
 *   **DEBUG**: Disabled by default in Production.
     *   Contains detailed state changes, payload summaries, and logic flow.
     *   Intended for developers debugging non-production environments.
@@ -297,8 +320,9 @@ To support debugging specific transactions in production without increasing the 
 
 *   If an incoming request indicates tracing is enabled (e.g., via `X-Trace-Enabled` header or sampled flag in OTel context):
     *   **WARN / ERROR / FATAL / TRACE**: Automatically logged for that request context.
-    *   **INFO / DEBUG**: Automatically promoted to be logged even if the service default is set to `WARN` or `INFO`.
+    *   **INFO / VERBOSE / DEBUG**: Automatically promoted to be logged even if the service default is set to `WARN` or `INFO`.
     *   *Goal:* Allow end-to-end tracing of a specific request through the entire system at high fidelity while keeping the rest of the system quiet.
+
 
 ## Dynamic Log Level Configuration
 

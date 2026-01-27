@@ -11,14 +11,14 @@ All incoming HTTP requests must be logged at the completion of the request.
 
 | Field Name | Type | Description | Example |
 |------------|------|-------------|---------|
-| `http.method` | string | HTTP request method | "POST", "GET" |
-| `http.url` | string | Full request URL | "https://api.mojaloop.io/transfers" |
-| `http.target` | string | The full request target | "/transfers" |
-| `http.host` | string | The value of the Host header | "api.mojaloop.io" |
-| `http.status_code` | number | HTTP response status code | 200, 400, 500 |
+| `http.request.method` | string | HTTP request method | "POST", "GET" |
+| `url.full` | string | Full request URL | "https://api.mojaloop.io/transfers" |
+| `url.path` | string | The target path | "/transfers" |
+| `server.address` | string | The server address (Host) | "api.mojaloop.io" |
+| `http.response.status_code` | number | HTTP response status code | 200, 400, 500 |
 | `http.route` | string | The matched route path (low cardinality) | "/transfers/:id" |
-| `http.user_agent` | string | User agent string | "Mozilla/5.0..." |
-| `client.ip` | string | IP address of the client | "192.168.1.1" |
+| `user_agent.original` | string | User agent string | "Mozilla/5.0..." |
+| `client.address` | string | IP address of the client | "192.168.1.1" |
 | `request.id` | string | Unique request identifier (Trace ID) | "req-123xyz" |
 | `duration.ms` | number | Duration of the request in milliseconds | 150 |
 
@@ -44,9 +44,9 @@ For Mojaloop-specific API calls, the following FSPIOP headers must be logged as 
 {
   "level": "INFO",
   "message": "Incoming request specific_route",
-  "http.method": "POST",
+  "http.request.method": "POST",
   "http.route": "/transfers",
-  "http.status_code": 201,
+  "http.response.status_code": 201,
   "duration.ms": 45,
   ...
 }
@@ -60,9 +60,9 @@ All outgoing HTTP requests made by the service must be logged.
 
 | Field Name | Type | Description | Example |
 |------------|------|-------------|---------|
-| `http.method` | string | HTTP request method | "GET" |
-| `http.url` | string | Full request URL | "https://external-service.com/api" |
-| `http.status_code` | number | HTTP response status code received | 200 |
+| `http.request.method` | string | HTTP request method | "GET" |
+| `url.full` | string | Full request URL | "https://external-service.com/api" |
+| `http.response.status_code` | number | HTTP response status code received | 200 |
 | `peer.service` | string | Name of the service being called | "account-lookup-service" |
 | `duration.ms` | number | Duration of the call in milliseconds | 230 |
 
@@ -71,9 +71,9 @@ All outgoing HTTP requests made by the service must be logged.
 {
   "level": "INFO",
   "message": "Outgoing request to Account Lookup",
-  "http.method": "GET",
-  "http.url": "http://als/participants/123",
-  "http.status_code": 200,
+  "http.request.method": "GET",
+  "url.full": "http://als/participants/123",
+  "http.response.status_code": 200,
   "peer.service": "account-lookup",
   "duration.ms": 120
 }
