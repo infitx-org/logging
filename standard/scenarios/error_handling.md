@@ -18,8 +18,9 @@ When an exception occurs that cannot be handled immediately (or is being handled
 | `error.user_message` | string | The user-facing notification | "Operation failed, contact provider" |
 
 ### Log Level Guidelines
-*   **FATAL**: The process will exit immediately.
+For detailed definitions of log levels, refer to the [Log Levels Standard](../log_levels.md).
 
+*   **FATAL**: The process will likely exit immediately.
 *   **ERROR**: The request failed, but the process continues.
 *   **WARN**: The error was handled/recovered, or is a validation issue.
 

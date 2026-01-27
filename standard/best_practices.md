@@ -38,7 +38,7 @@ In high-throughput environments (e.g., 10,000 TPS), logging every successful eve
     *   Use **Logs** for high-cardinality details that cannot be captured in metrics (e.g., specific transaction IDs, error reasons).
 *   **Sampling:**
     *   Operational INFO logs (e.g., "Request received", "Health check") should be subject to **probabilistic sampling**.
-    *   **Recommendation:** Keep 100% of ERROR/WARN logs, but sample INFO success logs (e.g., 1% or 0.1%) in high-volume paths.
+    *   **Recommendation:** Keep 100% of FATAL/ERROR/WARN logs, but sample INFO success logs (e.g., 1% or 0.1%) in high-volume paths.
     *   OpenTelemetry offers native Sampling processors to handle this at the collection layer.
 
 ## Anti-Patterns to Avoid
