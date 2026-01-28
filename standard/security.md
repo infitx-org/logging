@@ -8,7 +8,8 @@ This document defines the requirements for handling sensitive data in logs to in
 
 **Never Log:**
 - Passwords / Secrets / Keys
-- Full Credit Card / Bank Account Numbers (Mask: `****1234`)
+- Bank Account Numbers (Mask: `****1234`)
+- MSISDNs (Mask: `****5678`)
 - Personally Identifiable Information (PII) like Names, Phone Numbers, Addresses (unless authorized and necessary for debugging in secure envs)
 - Authentication Tokens (Bearer tokens)
 

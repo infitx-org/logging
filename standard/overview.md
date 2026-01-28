@@ -31,9 +31,10 @@ The standard is broken down into the following sections:
 | ERROR | 17-20 | ✅ Always | Operation failures | Transaction failed |
 | WARN  | 13-16 | ✅ Always | Recoverable issues | Validation failure, retry |
 | INFO  | 9-12  | ✅ Always | Business events | Transfer completed |
-| VERBOSE | 7   | ⚠️ Sampled| Operational noise | Health check, keep-alive |
+| VERBOSE | 7-8   | ⚠️ Sampled| Operational noise | Health check, keep-alive |
 | DEBUG | 5-6   | ⚠️ Temporarily | Troubleshooting | Function calls, logic |
 | TRACE | 1-4   | ❌ Rarely | Deep diagnosis | Variable state, loop dump |
+
 
 **Default production setting: INFO level (SeverityNumber >= 9)**
 - Captures all important business events
