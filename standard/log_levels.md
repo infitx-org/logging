@@ -8,13 +8,13 @@ Mojaloop log levels map to OpenTelemetry SeverityNumber ranges for compatibility
 
 | Mojaloop Level | OTel SeverityNumber | OTel Range | Numeric Value |
 |----------------|---------------------|------------|---------------|
-| TRACE          | TRACE               | 1-4        | 1             |
-| DEBUG          | DEBUG               | 5        | 5             |
-| VERBOSE        | INFO (Low-priority) | 6-8        | 7             |
-| INFO           | INFO                | 9-12       | 9             |
-| WARN           | WARN                | 13-16      | 13            |
-| ERROR          | ERROR               | 17-20      | 17            |
 | FATAL          | FATAL               | 21-24      | 21            |
+| ERROR          | ERROR               | 17-20      | 17            |
+| WARN           | WARN                | 13-16      | 13            |
+| INFO           | INFO                | 9-12       | 9             |
+| VERBOSE        | INFO (Low-priority) | 7-8        | 7             |
+| DEBUG          | DEBUG               | 5-6        | 5             |
+| TRACE          | TRACE               | 1-4        | 1             |
 
 When emitting logs via OpenTelemetry SDK, use the corresponding SeverityNumber. Most logging libraries will handle this mapping automatically.
 
