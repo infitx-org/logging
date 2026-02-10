@@ -14,6 +14,7 @@ All incoming HTTP requests must be logged at the completion of the request.
 | `http.request.method` | string | HTTP request method | "POST", "GET" |
 | `url.full` | string | Full request URL | "https://api.mojaloop.io/transfers" |
 | `url.path` | string | The target path | "/transfers" |
+| `url.scheme` | string | The URI scheme component identifying the used protocol | "https" |
 | `server.address` | string | The server address (Host) | "api.mojaloop.io" |
 | `http.response.status_code` | number | HTTP response status code | 200, 400, 500 |
 | `http.route` | string | The matched route path (low cardinality) | "/transfers/:id" |

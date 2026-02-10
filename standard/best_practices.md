@@ -43,21 +43,7 @@ In high-throughput environments (e.g., 10,000 TPS), logging every successful eve
 
 ## Anti-Patterns to Avoid
 
-### 1. Wrong Log Level
-```javascript
-// ❌ BAD - Using console.log for errors, generic message
-console.log('Database connection failed', error);
-
-// ✅ GOOD - Proper level with descriptive message
-logger.error(`Database connection to ${dbHost}:${dbPort} failed: ${error.message}`, {
-  operation: 'connectDatabase',
-  'db.host': dbHost,
-  'db.port': dbPort,
-  'error.type': error.name,
-  'error.message': error.message,
-  'error.stack': error.stack
-});
-```
+### 1. Using console.log
 
 ### 2. Logging Everything at INFO
 ```javascript
@@ -100,10 +86,7 @@ logger.error(`Transfer ${transfer.id} validation failed at step '${step}': ${val
 logger.error(`Failed: ${error.message}`);
 
 // ✅ GOOD - Passing the error object ensures stack is captured
-logger.error(`Transfer failed: ${error.message}`, {
-  eventName: 'TransferFailed',
-  error: error // Logger serializer should handle 'error.stack' and 'error.code'
-});
+logger.error(`Transfer failed: `, error) // Logger serializer should handle 'error.stack' and 'error.code'
 ```
 
 ### 5. Sensitive Data Exposure

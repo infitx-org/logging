@@ -6,15 +6,15 @@ This document details the standard log levels, their mapping to OpenTelemetry, a
 
 Mojaloop log levels map to OpenTelemetry SeverityNumber ranges for compatibility:
 
-| Mojaloop Level | OTel SeverityNumber | OTel Range | Numeric Value |
-|----------------|---------------------|------------|---------------|
-| FATAL          | FATAL               | 21-24      | 21            |
-| ERROR          | ERROR               | 17-20      | 17            |
-| WARN           | WARN                | 13-16      | 13            |
-| INFO           | INFO                | 9-12       | 9             |
-| VERBOSE        | INFO (Low-priority) | 7-8        | 7             |
-| DEBUG          | DEBUG               | 5-6        | 5             |
-| TRACE          | TRACE               | 1-4        | 1             |
+| Mojaloop Level | ML numeric value | OTel SeverityNumber | OTel Range | Numeric Value |
+|----------------|------------------|---------------------|------------|---------------|
+| FATAL          | -                | FATAL               | 21-24      | 21            |
+| ERROR          | 0                | ERROR               | 17-20      | 17            |
+| WARN           | 1                | WARN                | 13-16      | 13            |
+| INFO           | 4                | INFO                | 9-12       | 9             |
+| VERBOSE        | 6                | INFO (Low-priority) | 7-8        | 7             |
+| DEBUG          | 7                | DEBUG               | 5-6        | 5             |
+| TRACE          | 3                | TRACE               | 1-4        | 1             |
 
 When emitting logs via OpenTelemetry SDK, use the corresponding SeverityNumber. Most logging libraries will handle this mapping automatically.
 
@@ -309,10 +309,10 @@ The complexity and structure of logs depend on their level.
     *   Captures high-frequency noise like health checks.
     *   Often sampled or disabled to save storage.
 *   **DEBUG**: Disabled by default in Production.
-    *   Contains detailed state changes, payload summaries, and logic flow.
+    *   Contains detailed state changes, full payload (body content), and logic flow.
     *   Intended for developers debugging non-production environments.
 *   **TRACE**: Disabled by default.
-    *   Contains full payload dumps (body content), loop iterations, and variable values.
+    *   Loop iterations, and variable values.
     *   Should only be enabled explicitly for deep diagnostics.
 
 ### Dynamic Tracing Override (Force-Logging)

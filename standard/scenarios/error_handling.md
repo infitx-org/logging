@@ -9,13 +9,13 @@ When an exception occurs that cannot be handled immediately (or is being handled
 
 ### Required Fields for Error Logs
 
-| Field Name | Type | Description | Example |
-|------------|------|-------------|---------|
-| `exception.type` | string | The error class or slug | "ValidationError", "participant.notFound" |
-| `exception.message` | string | The technical error message | "Invalid account ID: 123" |
+| Field Name             | Type | Description | Example |
+|------------------------|------|-------------|---------|
+| `exception.type`       | string | The error class or slug | "ValidationError", "participant.notFound" |
+| `exception.message`    | string | The technical error message | "Invalid account ID: 123" |
 | `exception.stacktrace` | string | The full stack trace (incl. causes) | "Error: ... at verify (file.js:10)..." |
-| `error.code` | string | Internal error code | "2001", "SQL-23505" |
-| `error.user_message` | string | The user-facing notification | "Operation failed, contact provider" |
+| `error.type`           | string | Internal error code | "2001", "SQL-23505" |
+| `error.user_message`   | string | The user-facing notification | "Operation failed, contact provider" |
 
 ### Log Level Guidelines
 For detailed definitions of log levels, refer to the [Log Levels Standard](../log_levels.md).
