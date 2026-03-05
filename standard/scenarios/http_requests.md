@@ -7,7 +7,7 @@ This standard defines the required fields and practices for logging HTTP request
 
 All incoming HTTP requests must be logged at the completion of the request.
 
-### Required Fields
+### Required Attributes
 
 | Field Name | Type | Description | Example |
 |------------|------|-------------|---------|
@@ -26,7 +26,7 @@ All incoming HTTP requests must be logged at the completion of the request.
 
 > **Note:** We use `http.server.request.duration` (in seconds) instead of a custom `duration.ms` attribute because OTel semantic conventions define duration as the measured value of a histogram metric, not an attribute. Using the standard metric name aligns with OTel tooling and dashboards.
 
-### Recommended Fields
+### Recommended Attributes (Fields)
 * `http.request_content_length`
 * `http.response_content_length`
 
@@ -48,11 +48,13 @@ For Mojaloop-specific API calls, the following FSPIOP headers must be logged as 
 {
   "level": "INFO",
   "message": "Incoming request specific_route",
-  "http.request.method": "POST",
-  "http.route": "/transfers",
-  "http.response.status_code": 201,
-  "http.server.request.duration": 0.045,
-  ...
+  "attributes": {
+    "http.request.method": "POST",
+    "http.route": "/transfers",
+    "http.response.status_code": 201,
+    "http.server.request.duration": 0.045
+    // ...
+  }
 }
 ```
 
@@ -80,11 +82,13 @@ All outgoing HTTP requests made by the service must be logged.
 {
   "level": "INFO",
   "message": "Outgoing request to Account Lookup",
-  "http.request.method": "GET",
-  "url.full": "http://als/participants/123",
-  "http.response.status_code": 200,
-  "service.peer.name": "account-lookup",
-  "http.client.request.duration": 0.120
+  "attributes": {
+    "http.request.method": "GET",
+    "url.full": "http://als/participants/123",
+    "http.response.status_code": 200,
+    "service.peer.name": "account-lookup",
+    "http.client.request.duration": 0.120
+  }
 }
 ```
 
@@ -93,10 +97,12 @@ All outgoing HTTP requests made by the service must be logged.
 {
   "level": "ERROR",
   "message": "Outgoing request to Account Lookup failed",
-  "http.request.method": "GET",
-  "url.full": "http://als/participants/123",
-  "error.type": "ECONNREFUSED",
-  "service.peer.name": "account-lookup",
-  "http.client.request.duration": 5.001
+  "attributes": {
+    "http.request.method": "GET",
+    "url.full": "http://als/participants/123",
+    "error.type": "ECONNREFUSED",
+    "service.peer.name": "account-lookup",
+    "http.client.request.duration": 5.001
+  }
 }
 ```
