@@ -228,22 +228,28 @@ For detailed definitions of log levels, refer to the [Log Levels Standard](../lo
 ```javascript
 // ERROR - Producer failure
 logger.error('Producer failed to send message to topic-transfer-prepare: ERR_BROKER_NOT_AVAILABLE', {
-  'messaging.system': 'kafka',
-  'messaging.destination.name': 'topic-transfer-prepare',
-  'error.type': 'ERR_BROKER_NOT_AVAILABLE'
+  attributes: {
+    'messaging.system': 'kafka',
+    'messaging.destination.name': 'topic-transfer-prepare',
+    'error.type': 'ERR_BROKER_NOT_AVAILABLE'
+  }
 });
 
 // WARN - Broker disconnection
 logger.warn('Kafka broker disconnected, attempting reconnect', {
-  'server.address': 'kafka:9092',
-  'messaging.client.id': 'ml-api-adapter'
+  attributes: {
+    'server.address': 'kafka:9092',
+    'messaging.client.id': 'ml-api-adapter'
+  }
 });
 
 // INFO - Consumer group joined
 logger.info('Consumer group ml-api-adapter-group joined, assigned 4 partitions', {
-  'messaging.consumer.group.name': 'ml-api-adapter-group',
-  'messaging.system': 'kafka',
-  partitionCount: 4
+  attributes: {
+    'messaging.consumer.group.name': 'ml-api-adapter-group',
+    'messaging.system': 'kafka',
+    partitionCount: 4
+  }
 });
 
 // VERBOSE - Span attributes diagnostic (as implemented in central-services-stream)
@@ -251,9 +257,11 @@ logger.verbose('kafka span attributes: ', { attributes: spanAttrs });
 
 // DEBUG - Individual message processing
 logger.debug('Processing message from topic-transfer-prepare partition 0 offset 42', {
-  'messaging.destination.name': 'topic-transfer-prepare',
-  'messaging.destination.partition.id': '0',
-  'messaging.kafka.offset': 42
+  attributes: {
+    'messaging.destination.name': 'topic-transfer-prepare',
+    'messaging.destination.partition.id': '0',
+    'messaging.kafka.offset': 42
+  }
 });
 ```
 
