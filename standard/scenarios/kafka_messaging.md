@@ -17,10 +17,10 @@ Example: `SEND:topic-transfer-prepare`
 
 | Field Name | Type | Description | Example |
 |------------|------|-------------|---------|
+| `server.address` | string | Kafka broker address | `"kafka:9092"` |
 | `messaging.system` | string | Messaging system identifier | `"kafka"` |
 | `messaging.destination.name` | string | Kafka topic name | `"topic-transfer-prepare"` |
 | `messaging.operation.name` | string | Operation type | `"send"` |
-| `server.address` | string | Kafka broker address | `"kafka:9092"` |
 | `messaging.client.id` | string | Kafka client identifier | `"ml-api-adapter"` |
 
 ### Conditionally Required Attributes
@@ -103,10 +103,10 @@ Example: `RECEIVE:topic-transfer-prepare`
 
 | Field Name | Type | Description | Example |
 |------------|------|-------------|---------|
+| `server.address` | string | Kafka broker address | `"kafka:9092"` |
 | `messaging.system` | string | Messaging system identifier | `"kafka"` |
 | `messaging.destination.name` | string | Kafka topic name | `"topic-transfer-prepare"` |
 | `messaging.operation.name` | string | Operation type | `"receive"` |
-| `server.address` | string | Kafka broker address | `"kafka:9092"` |
 | `messaging.client.id` | string | Kafka client identifier | `"ml-api-adapter"` |
 | `messaging.consumer.group.name` | string | Consumer group name | `"ml-api-adapter-group"` |
 
