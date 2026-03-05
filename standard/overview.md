@@ -50,3 +50,4 @@ Specific standards for common scenarios are available in the specific standards 
 *   [HTTP Requests](./scenarios/http_requests.md) - Standard for incoming and outgoing HTTP logging.
 *   [Error Handling](./scenarios/error_handling.md) - Rules for logging exceptions and propagating errors.
 *   [Database Queries](./scenarios/sql_queries.md) - Guidelines for logging SQL and DB interactions.
+*   [Kafka Messaging](./scenarios/kafka_messaging.md) - Standard for Kafka producer and consumer OTel tracing and logging.
