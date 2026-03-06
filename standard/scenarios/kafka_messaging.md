@@ -89,6 +89,13 @@ These headers enable the consumer to continue the distributed trace started by t
 }
 ```
 
+### Logs Example
+```bash
+2026-03-06T11:15:21.623Z - verbose: [msg =>>] producing is done:  - {"attributes":{"messaging.client.id":"default-client","messaging.destination.name":"test","messaging.kafka.message.key":"1234","messaging.operation.name":"send","messaging.system":"kafka","server.address":"localhost:9092"},"context":"ml-kafka","offset":1,"topicConf":{"key":"[REDACTED]","topicName":"test"}}
+```    
+
+---
+
 ## Consumer Operations
 
 When a service consumes messages from a Kafka topic, a `CONSUMER` span must be created with the attributes below.
@@ -183,6 +190,13 @@ The consumer must extract W3C Trace Context headers from the first message in th
   "messaging.kafka.offset": 42,
   "error.type": "ValidationError"
 }
+```
+
+### Logs Example
+```bash
+2026-03-06T09:33:05.717Z - info: [<#> msg] message processing end  [durationSec: 1.003,  batchId: p0.42-p0.42] -        {"context":"ml-kafka"}
+2026-03-06T09:33:07.535Z - verbose: kafka span attributes:  -   {"attributes":{"messaging.client.id":"quotes-handler-post_c","messaging.consumer.group.name":"group-quotes-handler-post","messaging.destination.name":"topic-quotes-post","messaging.destination.partition.id":"0","messaging.kafka.offset":43,"messaging.operation.name":"receive","messaging.system":"kafka","server.address":"kafka:29092"},"context":"ml-kafka"}
+2026-03-06T09:33:07.535Z - info: [=>> msg] message processing start  [batchSize: 1,  batchId: p0.43-p0.43]... - {"context":"ml-kafka"}
 ```
 
 ## Batch vs Single Message Attributes
