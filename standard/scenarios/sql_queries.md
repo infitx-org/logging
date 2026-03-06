@@ -1,46 +1,143 @@
 # SQL and Database Logging Standard
 
 ## Overview
-This standard defines the required fields for logging database interactions. Note that full query logging is generally reserved for DEBUG level or specific audit requirements to avoid leaking sensitive data (PII).
+
+This standard defines how to log database interactions. It aligns with [OpenTelemetry Database Semantic Conventions](https://opentelemetry.io/docs/specs/semconv/database/) and [MySQL-specific conventions](https://opentelemetry.io/docs/specs/semconv/db/mysql/).
+
+Full query logging is reserved for DEBUG level or specific audit requirements to avoid leaking sensitive data (PII).
 
 ## Query Logging
 
 ### Log Level
+
 *   **DEBUG**: Log all queries for development/debugging.
 *   **INFO/WARN**: Log slow queries (exceeding a defined threshold).
 *   **ERROR**: Log failed queries.
 
-### Required Fields
+### Required Attributes
 
 | Field Name | Type | Description | Example |
 |------------|------|-------------|---------|
-| `db.system` | string | The database management system | "mysql", "postgresql", "redis" |
-| `db.statement` | string | The sanitized SQL statement | "SELECT * FROM users WHERE id = ?" |
-| `db.query.name` | string | Logical name (e.g. from Knex comment) | "FetchParticipant" |
-| `db.rows_affected` | number | Count of rows affected/returned | 42 |
-| `duration.ms` | number | Execution time in milliseconds | 15.5 |
+| `db.system.name` | string | The DBMS product identifier | `"mysql"`, `"postgresql"` |
 
-### Optional Fields (TRACE Only)
-These fields are expensive or sensitive and should **only** be logged at `TRACE` level or when tracing is explicitly enabled.
+### Conditionally Required Attributes
 
-*   `db.parameters`: Array of query parameter values (Must be masked for PII).
-*   `db.rows_returned`: Preview of the result set (Truncated).
+Include these when the stated condition is met.
+
+| Field Name | Type | Condition | Description | Example |
+|------------|------|-----------|-------------|---------|
+| `db.namespace` | string | If available | Database name | `"central_ledger"` |
+| `db.collection.name` | string | If readily available and single-table operation | Table name | `"transfers"` |
+| `error.type` | string | If operation failed | Error classification | `"ER_DUP_ENTRY"`, `"TimeoutError"` |
+| `db.response.status_code` | string | If operation failed and code available | Database vendor error code (MySQL error number) | `"1062"`, `"1045"` |
+| `server.port` | integer | If non-default and `server.address` is set | Server port number | `3307` |
+
+### Recommended Attributes
+
+| Field Name | Type | Description | Example |
+|------------|------|-------------|---------|
+| `db.operation.name` | string | SQL command being executed (uppercase) | `"SELECT"`, `"INSERT"` |
+| `db.query.text` | string | Sanitized/parameterized SQL statement | `"SELECT * FROM transfers WHERE id = ?"` |
+| `db.query.summary` | string | Low-cardinality query summary (max 255 chars) | `"SELECT transfers"`, `"GetTransferById"` |
+| `server.address` | string | Database host | `"mysql-primary"` |
+| `db.client.operation.duration` | number | Execution time in **seconds** | `0.023` |
+
+> **Note:** We use `db.client.operation.duration` (in seconds) instead of a custom `duration.ms` attribute because OTel semantic conventions define duration as the measured value of a histogram metric, not an attribute. This matches the convention used in [HTTP Request Logging](./http_requests.md).
+
+### Opt-In Attributes (DEBUG/TRACE only)
+
+These attributes are expensive or sensitive. Log them only at DEBUG/TRACE level or when tracing is explicitly enabled.
+
+| Field Name | Type | Description | Example |
+|------------|------|-------------|---------|
+| `db.query.parameter.<key>` | string | Individual query parameter, keyed by name or zero-based index. Must be masked for PII. | `db.query.parameter.0`: `"abc-123"` |
+| `db.response.returned_rows` | integer | Count of rows returned (read operations) | `42` |
+| `db.response.rows_affected` | integer | Count of rows affected (write operations) — project extension, not in OTel | `1` |
 
 ### Security Warning
-*   **Never** logs `db.parameters` or `db.rows_returned` by default in Production (`INFO`).
-*   **Never** include raw values in `db.statement`. Use placeholders (`?`, `$1`).
-*   **Masking**: Even at `TRACE`, sensitive fields (passwords, PINs) must be redacted from parameters and results.
 
-### Example
+*   **Never** log `db.query.parameter.*` or result data by default in Production.
+*   **Never** include raw values in `db.query.text`. Use placeholders (`?`, `$1`).
+*   **Masking**: Even at TRACE, redact sensitive fields (passwords, PINs) from parameters and results.
+
+### Example (Success)
+
 ```json
 {
   "level": "DEBUG",
-  "message": "Executing SQL Query",
-  "db.system": "mysql",
-  "db.statement": "SELECT * FROM transfers WHERE id = ?",
-  "db.query.name": "GetTransferById",
-  "db.rows_affected": 1,
-  "duration.ms": 23
+  "message": "GetTransferById completed in 23ms on central_ledger.transfers",
+  "attributes": {
+    "db.system.name": "mysql",
+    "db.namespace": "central_ledger",
+    "db.operation.name": "SELECT",
+    "db.collection.name": "transfers",
+    "db.query.text": "SELECT * FROM transfers WHERE id = ?",
+    "db.query.summary": "SELECT transfers",
+    "server.address": "mysql-primary",
+    "server.port": 3306,
+    "db.client.operation.duration": 0.023,
+    "db.response.returned_rows": 1
+  }
 }
 ```
 
+### Example (Error)
+
+```json
+{
+  "level": "ERROR",
+  "message": "InsertTransfer failed: Duplicate entry 'abc-123' for key 'PRIMARY'",
+  "attributes": {
+    "db.system.name": "mysql",
+    "db.namespace": "central_ledger",
+    "db.operation.name": "INSERT",
+    "db.collection.name": "transfers",
+    "db.query.text": "INSERT INTO transfers (id, amount) VALUES (?, ?)",
+    "db.query.summary": "INSERT transfers",
+    "server.address": "mysql-primary",
+    "server.port": 3306,
+    "db.client.operation.duration": 0.005,
+    "error.type": "ER_DUP_ENTRY",
+    "db.response.status_code": "1062"
+  }
+}
+```
+
+## Error Handling
+
+When a database operation fails, capture the error with these steps:
+
+1. **Set span status** to `ERROR`:
+   ```javascript
+   span.setStatus({ code: SpanStatusCode.ERROR })
+   ```
+2. **Record the exception** on the span:
+   ```javascript
+   span.recordException(err)
+   ```
+3. **Set `error.type`** with the error classification:
+   ```javascript
+   span.setAttribute('error.type', err?.code || err?.name || 'UnknownError')
+   ```
+4. **Set `db.response.status_code`** with the database error code (when available):
+   ```javascript
+   span.setAttribute('db.response.status_code', String(err?.errno))
+   ```
+
+The error type resolution order (`err.code` → `err.name` → `'UnknownError'`) ensures that:
+- MySQL errors use their error code (e.g., `ER_DUP_ENTRY`, `ER_ACCESS_DENIED_ERROR`)
+- Node.js system errors use their code (e.g., `ECONNREFUSED`, `ETIMEDOUT`)
+- Application errors use their class name (e.g., `ValidationError`, `TimeoutError`)
+- Unknown errors get a fallback classification
+
+See [Error Handling Standard](./error_handling.md) for general error logging rules.
+
+## Review Checklist
+
+*   Does every database log include `db.system.name`?
+*   Is `db.query.text` sanitized (placeholders only, no raw values)?
+*   Is `db.client.operation.duration` in seconds (not milliseconds)?
+*   Is `error.type` set when queries fail, with resolution order `err.code` → `err.name` → `"UnknownError"`?
+*   Is `db.response.status_code` set with the MySQL error number on failure?
+*   Are `db.query.parameter.*` fields excluded from production logs unless explicitly enabled?
+*   Are sensitive values (passwords, PINs) redacted even at TRACE level?
