@@ -344,6 +344,10 @@ The library logs span attributes at `VERBOSE` level for diagnostic purposes:
 logger.verbose('kafka span attributes: ', { attributes: spanAttrs })
 ```
 
+### `LOG_LEVEL_KAFKA`
+
+The `central-services-stream` library runs its own logger (`ml-kafka` context), separate from the service's application logger. The `LOG_LEVEL_KAFKA` environment variable controls this logger's level independently. It defaults to `info`. Set it to `verbose` or `debug` in staging to trace span attributes and message flow without changing the service's log level. Valid values: `error`, `warn`, `info`, `verbose`, `debug`, `silly`.
+
 ## Review Checklist
 
 - Are all required span attributes (`messaging.system`, `messaging.destination.name`, `messaging.operation.name`) set on every Kafka span?
