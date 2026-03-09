@@ -11,7 +11,7 @@ Full query logging is reserved for DEBUG level or specific audit requirements to
 ### Log Level
 
 *   **DEBUG**: Log all queries for development/debugging.
-*   **INFO/WARN**: Log slow queries (exceeding a defined threshold).
+*   **WARN**: Log slow queries (exceeding a defined threshold) / expected errors.
 *   **ERROR**: Log failed queries.
 
 ### Required Attributes
@@ -102,6 +102,15 @@ These attributes are expensive or sensitive. Log them only at DEBUG/TRACE level 
   }
 }
 ```
+
+### Log examples
+
+```bash
+2026-03-09T11:23:16.917Z - debug: knex query response:  - {"attributes":{"db.client.operation.duration":0.570,"db.collection.name":"quote","db.namespace":"central_ledger","db.operation.name":"INSERT","db.query.summary":"INSERT quote","db.query.text":"insert into `quote` (`amount`, `amountTypeId`, `balanceOfPaymentsId`, `currencyId`, `expirationDate`, `note`, `quoteId`, `transactionInitiatorId`, `transactionInitiatorTypeId`, `transactionReferenceId`, `transactionRequestId`, `transactionScenarioId`, `transactionSubScenarioId`) values (?, ?, ?, ?, ?, DEFAULT, ?, ?, ?, ?, ?, ?, DEFAULT)","db.response.returned_rows":1,"db.system.name":"mysql","server.address":"mysql","server.port":3306},"context":"CachedDatabase","knexTxId":"trx2"}
+
+2026-03-09T11:23:55.415Z - error: knex query error:  -    {"attributes":{"db.client.operation.duration":0.007,"db.collection.name":"quoteError","db.namespace":"central_ledger","db.operation.name":"INSERT","db.query.summary":"INSERT quoteError","db.query.text":"insert into `quoteError` (`errorCode`, `errorDescription`, `quoteId`) values (?, ?, ?)","db.response.status_code":"1452","db.system.name":"mysql","error.type":"ER_NO_REFERENCED_ROW_2","server.address":"mysql","server.port":3306},"context":"CachedDatabase","knexTxId":"__knexUid12"}
+```
+
 
 ## Error Handling
 
