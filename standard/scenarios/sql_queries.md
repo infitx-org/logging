@@ -44,6 +44,8 @@ Include these when the stated condition is met.
 
 > **Note:** We use `db.client.operation.duration` (in seconds) instead of a custom `duration.ms` attribute because OTel semantic conventions define duration as the measured value of a histogram metric, not an attribute. This matches the convention used in [HTTP Request Logging](./http_requests.md).
 
+> **Note:** When using knex, the `db.query.summary` can be provided by the `.comment()` method
+
 ### Opt-In Attributes (DEBUG/TRACE only)
 
 These attributes are expensive or sensitive. Log them only at DEBUG/TRACE level or when tracing is explicitly enabled.
