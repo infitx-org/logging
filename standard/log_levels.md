@@ -11,10 +11,13 @@ Mojaloop log levels map to OpenTelemetry SeverityNumber ranges for compatibility
 | FATAL          | -                | FATAL               | 21-24      | 21            |
 | ERROR          | 0                | ERROR               | 17-20      | 17            |
 | WARN           | 1                | WARN                | 13-16      | 13            |
+| AUDIT          | 2                | ???                 |            |               |
+| TRACE          | 3                | ??? (see TRACE)     |            |               |
 | INFO           | 4                | INFO                | 9-12       | 9             |
+| PERF           | 5                | ???                 |            |               |
 | VERBOSE        | 6                | INFO (Low-priority) | 7-8        | 7             |
 | DEBUG          | 7                | DEBUG               | 5-6        | 5             |
-| TRACE          | 3                | TRACE               | 1-4        | 1             |
+| SILLY          | 8                | TRACE               | 1-4        | 1             |
 
 When emitting logs via OpenTelemetry SDK, use the corresponding SeverityNumber. Most logging libraries will handle this mapping automatically.
 
@@ -39,7 +42,7 @@ logger.fatal(`Central Ledger service shutting down: Database unreachable at star
   eventName: 'ServiceShutdown',
   reason: 'DatabaseUnreachable',
   'db.host': dbHost,
-  'error.message': error.message
+  'exception.message': error.message
 });
 ```
 
@@ -69,9 +72,9 @@ logger.error(`Transfer ${transfer.id} processing failed in processTransfer opera
   operation: 'processTransfer',
   eventName: 'TransferFailed',
   transferId: transfer.id,
-  'error.type': error.name,
-  'error.message': error.message,
-  'error.stack': error.stack
+  'exception.type': error.name,
+  'exception.message': error.message,
+  'exception.stacktrace': error.stack
 });
 
 logger.error(`Database connection to ${dbConfig.host}:${dbConfig.port} failed after ${retryCount} retry attempts: ${error.message}`, {
@@ -81,8 +84,8 @@ logger.error(`Database connection to ${dbConfig.host}:${dbConfig.port} failed af
   'db.port': dbConfig.port,
   'db.name': dbConfig.database,
   retryCount: retryCount,
-  'error.type': error.name,
-  'error.message': error.message
+  'exception.type': error.name,
+  'exception.message': error.message
 });
 ```
 
@@ -319,14 +322,16 @@ The complexity and structure of logs depend on their level.
 To support debugging specific transactions in production without increasing the global log verbosity:
 
 *   If an incoming request indicates tracing is enabled (e.g., via `X-Trace-Enabled` header or sampled flag in OTel context):
-    *   **WARN / ERROR / FATAL / TRACE**: Automatically logged for that request context.
+    *   **WARN / ERROR / FATAL**: Automatically logged for that request context.
     *   **INFO / VERBOSE / DEBUG**: Automatically promoted to be logged even if the service default is set to `WARN` or `INFO`.
     *   *Goal:* Allow end-to-end tracing of a specific request through the entire system at high fidelity while keeping the rest of the system quiet.
+
+> **See also:** [Dynamic Tracing Override](./scenarios/dynamic_tracing_override.md) for implementation details.
 
 
 ## Dynamic Log Level Configuration
 
 Services should support changing log levels without restart:
 - Via environment variables: `LOG_LEVEL=debug`
+- Per-component configuration: `LOG_LEVEL_MYSQL=debug`
 - Via configuration endpoint: `PUT /admin/log-level`
-- Per-component configuration: `LOG_LEVEL_DATABASE=debug`

@@ -115,8 +115,8 @@ logger.error(
     'transfer.amount': transfer.amount.amount,
     'transfer.currency': transfer.amount.currency,
     'error.type': 'ValidationError',
-    'error.message': error.message,
-    'error.stack': error.stack,
+    'exception.message': error.message,
+    'exception.stacktrace': error.stack,
     'duration.ms': 250
   }
 );
