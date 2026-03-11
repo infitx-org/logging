@@ -108,7 +108,10 @@ For Mojaloop-specific API calls, the following FSPIOP headers must be logged as 
 
 ### Logs example:
 ```bash
-2026-03-09T16:59:40.352Z - info: [<-- 200] POST http://mock-hub:7777/greenbank/fxQuotes  [0.001 s]: -   {"attributes":{"http.client.request.duration":0.001,"http.request.method":"POST","http.response.status_code":200,"server.address":"mock-hub","server.port":7777,"url.full":"http://mock-hub:7777/greenbank/fxQuotes"},"component":"sendBaseRequest","context":"CSSh"}
+2026-03-09T16:59:40.334Z - info: [==> req] POST /fxQuotes  [10008] -    {"attributes":{"client.address":"172.19.0.1","http.request.method":"POST","http.route":"/{p*}","request.id":"1773075580333:37c01683ce70:30:mmjfbo4w:10008__undefined","server.address":"localhost","server.port":3002,"url.full":"http://localhost:13002/fxQuotes","url.path":"/fxQuotes","url.scheme":"http","user_agent.original":"axios/1.13.6"},"context":"QS","headers":{"accept":"application/vnd.interoperability.iso20022.fxQuotes+json;version=2.0","accept-encoding":"gzip, compress, deflate, br","connection":"keep-alive","content-length":"816","content-type":"application/vnd.interoperability.iso20022.fxQuotes+json;version=2.0","date":"Mon, 09 Mar 2026 16:59:40 GMT","fspiop-destination":"greenbank","fspiop-source":"pinkbank","host":"localhost:13002","user-agent":"axios/1.13.6"},"requestId":"1773075580333:37c01683ce70:30:mmjfbo4w:10008__undefined"}
+...
+2026-03-09T16:59:40.336Z - info: [<== 202] POST /fxQuotes  [10008] 0.003s -     {"attributes":{"client.address":"172.19.0.1","http.request.method":"POST","http.response.status_code":202,"http.route":"/fxQuotes","http.server.request.duration":0.003,"request.id":"1773075580333:37c01683ce70:30:mmjfbo4w:10008__undefined","server.address":"localhost","server.port":3002,"url.full":"http://localhost:13002/fxQuotes","url.path":"/fxQuotes","url.scheme":"http","user_agent.original":"axios/1.13.6"},"context":"QS","headers":{}}
+
 ```
 
 ## Outgoing Requests (Client Side)
@@ -180,12 +183,10 @@ All outgoing HTTP requests made by the service must be logged.
 }
 ```
 
+
 ### Logs example:
 ```bash
-2026-03-09T16:59:40.334Z - info: [==> req] POST /fxQuotes  [10008] -    {"attributes":{"client.address":"172.19.0.1","http.request.method":"POST","http.route":"/{p*}","request.id":"1773075580333:37c01683ce70:30:mmjfbo4w:10008__undefined","server.address":"localhost","server.port":3002,"url.full":"http://localhost:13002/fxQuotes","url.path":"/fxQuotes","url.scheme":"http","user_agent.original":"axios/1.13.6"},"context":"QS","headers":{"accept":"application/vnd.interoperability.iso20022.fxQuotes+json;version=2.0","accept-encoding":"gzip, compress, deflate, br","connection":"keep-alive","content-length":"816","content-type":"application/vnd.interoperability.iso20022.fxQuotes+json;version=2.0","date":"Mon, 09 Mar 2026 16:59:40 GMT","fspiop-destination":"greenbank","fspiop-source":"pinkbank","host":"localhost:13002","user-agent":"axios/1.13.6"},"requestId":"1773075580333:37c01683ce70:30:mmjfbo4w:10008__undefined"}
-...
-2026-03-09T16:59:40.336Z - info: [<== 202] POST /fxQuotes  [10008] 0.003s -     {"attributes":{"client.address":"172.19.0.1","http.request.method":"POST","http.response.status_code":202,"http.route":"/fxQuotes","http.server.request.duration":0.003,"request.id":"1773075580333:37c01683ce70:30:mmjfbo4w:10008__undefined","server.address":"localhost","server.port":3002,"url.full":"http://localhost:13002/fxQuotes","url.path":"/fxQuotes","url.scheme":"http","user_agent.original":"axios/1.13.6"},"context":"QS","headers":{}}
-
+2026-03-09T16:59:40.352Z - info: [<-- 200] POST http://mock-hub:7777/greenbank/fxQuotes  [0.001 s]: -   {"attributes":{"http.client.request.duration":0.001,"http.request.method":"POST","http.response.status_code":200,"server.address":"mock-hub","server.port":7777,"url.full":"http://mock-hub:7777/greenbank/fxQuotes"},"component":"sendBaseRequest","context":"CSSh"}
 ```
 
 ## error.type Values
