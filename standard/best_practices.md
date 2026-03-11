@@ -112,6 +112,13 @@ logger.setLevel(LOG_LEVEL_KAFKA)
 ## Anti-Patterns to Avoid
 
 ### 1. Using console.log
+```javascript
+// ❌ BAD 
+console.log('Some message')
+
+// ✅ GOOD
+logger.info('Some message')
+```
 
 ### 2. Logging Everything at INFO
 ```javascript

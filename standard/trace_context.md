@@ -5,7 +5,7 @@ This document describes how distributed tracing context is propagated through lo
 
 ## Manual Otel Context Usage
 
-**When using OpenTelemetry auto-instrumentation for `winston` logging library, `trace_id` and `span_id` are injected in all logs automatically, so we need to add Otel span attributes only.
+When using **OpenTelemetry auto-instrumentation** for `winston` logging library, `trace_id` and `span_id` are injected in all logs automatically, so we need to add Otel span attributes only.
 
 OpenTelemetry API Span is WRITE-ONLY - no getAttribute() method exists. The API is for instrumentation (writing), not reading.
 To read span attributes, we'll need SDK's ReadableSpan.  But in this case we can’t use auto-instrumentation approach (no code changes, just pass needed env vars).
@@ -21,10 +21,10 @@ const outgoingRequestAttributesDto = ({
   attributes: {
     [otel.ATTR_HTTP_REQUEST_METHOD]: method,
     [otel.ATTR_URL_FULL]: url,
-    [otel.METRIC_HTTP_CLIENT_REQUEST_DURATION]: durationSec, // 'duration.ms' is a custom attribute
+    [otel.METRIC_HTTP_CLIENT_REQUEST_DURATION]: durationSec,
     ...(statusCode && { [otel.ATTR_HTTP_RESPONSE_STATUS_CODE]: statusCode }),
     ...(errorType && { [otel.ATTR_ERROR_TYPE]: errorType }),
-    ...(peerService && { [ATTR_SERVICE_PEER_NAME]: peerService })
+    ...(peerService && { [otel.ATTR_SERVICE_PEER_NAME]: peerService })
     // peerService - logical service name, must be explicitly provided by caller (not derived from URL hostname)
     //               think if we should extract it for internal http://... calls from url hostname
   }

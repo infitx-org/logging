@@ -17,7 +17,8 @@ Example: `SEND:topic-transfer-prepare`
 
 | Field Name | Type | Description | Example |
 |------------|------|-------------|---------|
-| `server.address` | string | Kafka broker address | `"kafka:9092"` |
+| `server.address` | string | Kafka broker address (host or IP, without port)  | `"kafka"` |
+| `server.port` | int | Kafka broker port | `9092` |
 | `messaging.system` | string | Messaging system identifier | `"kafka"` |
 | `messaging.destination.name` | string | Kafka topic name | `"topic-transfer-prepare"` |
 | `messaging.operation.name` | string | Operation type | `"send"` |
