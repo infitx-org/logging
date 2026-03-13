@@ -6,7 +6,8 @@ This document provides guidelines on implementation, performance optimization, a
 
 ### Performance Considerations
 - **Avoid expensive operations at DEBUG/TRACE** - These should be cheap since they may be enabled temporarily
-- **Use lazy evaluation** - Don't compute log data if level won't be logged
+- **Use `loggerFactory` from contextLogger** - It checks `is<Level>Enabled` internally before calling Winston, so log arguments are only serialized when the level is active
+- **Use `isDebugEnabled()` only for expensive computation** - Guard with `isDebugEnabled()` only when the arguments themselves require expensive work that exists solely for debugging
 - **Structured logging** - Log objects, not concatenated strings
 - **Avoid JSON.stringify** - Let the logging library handle serialization
 
@@ -20,43 +21,103 @@ logger.debug(`Processing: ${JSON.stringify(largeObject)}`);
 
 **Good:**
 ```javascript
-// Object only serialized if DEBUG enabled
+// contextLogger handles level checks internally — just log
 logger.debug('Processing transfer', { transfer });
 
-// Or with conditional logging for very expensive operations
+// Use isDebugEnabled() ONLY when guarding expensive computation
 if (logger.isDebugEnabled()) {
   logger.debug('Detailed state', { computedState: computeExpensiveState() });
 }
 ```
 
-### High Volume Sampling and Aggregation
+### Metrics vs. Logs
+  
+Do **NOT** use logs for counting volume or calculating success rates. Use **Metrics** (Counters, Histograms) for throughput, latency, and error rate tracking.
+Use **Logs** for high-cardinality details that cannot be captured in metrics (e.g., specific transaction IDs, error reasons).
 
-In high-throughput environments (e.g., 10,000 TPS), logging every successful event can overwhelm storage and analysis systems.
 
-*   **Metrics vs. Logs:**
-    *   Do **NOT** use logs for counting volume or calculating success rates. Use **Metrics** (Counters, Histograms) for throughput, latency, and error rate tracking.
-    *   Use **Logs** for high-cardinality details that cannot be captured in metrics (e.g., specific transaction IDs, error reasons).
-*   **Sampling:**
-    *   Operational INFO logs (e.g., "Request received", "Health check") should be subject to **probabilistic sampling**.
-    *   **Recommendation:** Keep 100% of FATAL/ERROR/WARN logs, but sample INFO success logs (e.g., 1% or 0.1%) in high-volume paths.
-    *   OpenTelemetry offers native Sampling processors to handle this at the collection layer.
+## Infrastructure and Observability
+
+### Correlation IDs and Trace Context
+
+Winston's OTel auto-instrumentation (`@opentelemetry/instrumentation-winston`) automatically injects `trace_id`, `span_id`, and `trace_flags` into every log entry. Do **not** add them manually — duplicate or stale IDs cause correlation errors.
+
+Use child loggers for **business-level** correlation IDs only (request ID, transfer ID, batch ID):
+
+```javascript
+// trace_id and span_id are injected automatically by OTel instrumentation
+// Only add business identifiers via child loggers
+const log = logger.child({ requestId: req.id, transferId: req.params.id })
+log.info('Processing request')
+```
+
+### Log to Stdout
+
+Write all logs to stdout. Do **not** use `console.log` or write to files directly. Delegate collection, rotation, and shipping to external tools (Fluentd, Vector, OTel Collector). In containerized environments, a sidecar or daemonset picks up stdout, enriches it with pod/host metadata, and ships it to a centralized store.
+
+### OpenTelemetry Semantic Conventions
+
+Use OTel's standard attribute names so logs, traces, and metrics correlate without per-service mapping:
+
+| Domain | Attributes |
+|--------|-----------|
+| HTTP | `http.request.method`, `url.path`, `http.response.status_code` |
+| Database | `db.system`, `db.statement`, `db.operation.name` |
+| Errors | `error.type`, `error.message`, `error.stack_trace` |
+| Messaging | `messaging.system`, `messaging.destination.name` |
+
+When OTel renames or deprecates an attribute, update logging code to match.
+
+### Canonical Log Lines
+
+Emit one wide log entry per request at the HTTP boundary. Include method, route, status code, duration, and key business identifiers. This single entry supports latency analysis, error rate calculation, and audit without aggregation.
+
+```javascript
+logger.info(`${req.method} ${req.path} ${res.statusCode}`, {
+  'http.request.method': req.method,
+  'url.path': req.path,
+  'http.response.status_code': res.statusCode,
+  'http.server.request.duration': duration,
+  transferId
+})
+```
+
+### Redaction at Logger Level
+
+Apply redaction at the logger configuration — not at each call site — so new fields cannot leak by accident. Declare paths to mask (e.g., `authorization`, `password`, `token` fields). Log user IDs and entity references instead of full user objects. Dump sanitized configuration at startup: mark sensitive fields so they display as asterisks.
+
+### Per-Component Log Levels
+
+Use `setLevel()` on a child logger to change its verbosity without affecting the parent or siblings. This lets you debug one subsystem without raising the noise floor for everything else.
+
+```javascript
+// Only database logs go to debug; parent and siblings stay at their original level
+const dbLog = logger.child({ component: 'database' })
+dbLog.setLevel('debug')
+```
+
+### Dedicated `LOG_LEVEL_{DOMAIN}` Env Vars
+
+When a shared library creates its own internal logger, control its level via a `LOG_LEVEL_{DOMAIN}` env var with a default of `'info'`. This lets operators tune library verbosity without changing the service's log level.
+
+```javascript
+const { LOG_LEVEL_KAFKA = 'info' } = require('node:process').env
+const logger = loggerFactory('ml-kafka')
+logger.setLevel(LOG_LEVEL_KAFKA)
+
+// Usage: LOG_LEVEL_KAFKA=debug npm start
+// Service stays at 'info', Kafka internals log at 'debug'
+```
 
 ## Anti-Patterns to Avoid
 
-### 1. Wrong Log Level
+### 1. Using console.log
 ```javascript
-// ❌ BAD - Using console.log for errors, generic message
-console.log('Database connection failed', error);
+// ❌ BAD 
+console.log('Some message')
 
-// ✅ GOOD - Proper level with descriptive message
-logger.error(`Database connection to ${dbHost}:${dbPort} failed: ${error.message}`, {
-  operation: 'connectDatabase',
-  'db.host': dbHost,
-  'db.port': dbPort,
-  'error.type': error.name,
-  'error.message': error.message,
-  'error.stack': error.stack
-});
+// ✅ GOOD
+logger.info('Some message')
 ```
 
 ### 2. Logging Everything at INFO
@@ -100,10 +161,7 @@ logger.error(`Transfer ${transfer.id} validation failed at step '${step}': ${val
 logger.error(`Failed: ${error.message}`);
 
 // ✅ GOOD - Passing the error object ensures stack is captured
-logger.error(`Transfer failed: ${error.message}`, {
-  eventName: 'TransferFailed',
-  error: error // Logger serializer should handle 'error.stack' and 'error.code'
-});
+logger.error(`Transfer failed: `, error) // Logger serializer should handle 'exception.stacktrace' and 'exception.type'
 ```
 
 ### 5. Sensitive Data Exposure
@@ -118,7 +176,7 @@ logger.debug('User authentication', {
 });
 ```
 
-### 5. Over-Logging
+### 6. Over-Logging
 ```javascript
 // ❌ BAD - Logging inside tight loops with repeated generic messages
 for (const transfer of transfers) {

@@ -2,49 +2,69 @@
 
 This document describes how distributed tracing context is propagated through logs to enable correlation across microservices.
 
-## Automatic Context Injection (Recommended)
 
-**When using OpenTelemetry-instrumented logging libraries, trace context is automatically injected:**
+## Manual Otel Context Usage
 
-```javascript
-// Setup at application startup (ONCE)
-const { NodeSDK } = require('@opentelemetry/sdk-node');
-const { PinoInstrumentation } = require('@opentelemetry/instrumentation-pino');
+When using **OpenTelemetry auto-instrumentation** for `winston` logging library, `trace_id` and `span_id` are injected in all logs automatically, so we need to add Otel span attributes only.
 
-const sdk = new NodeSDK({
-  instrumentations: [
-    new PinoInstrumentation()
-  ]
-});
-
-sdk.start();
-
-// Now ALL log calls automatically include trace context - no manual work needed!
-logger.info('Transfer completed', { transferId: '123' });
-// Logs will automatically include: { traceId: '...', spanId: '...', transferId: '123' }
-```
-
-## Manual Context Usage (NOT Recommended)
-
-⚠️ **Only use this if your logging library doesn't support OpenTelemetry instrumentation:**
+OpenTelemetry API Span is WRITE-ONLY - no getAttribute() method exists. The API is for instrumentation (writing), not reading.
+To read span attributes, we'll need SDK's ReadableSpan.  But in this case we can’t use auto-instrumentation approach (no code changes, just pass needed env vars).
+Because of that the proposed solution is to implement OTel logging inside common wrappers: for outgoing http requests, Hapi logging plugin (for incoming requests), ML Kafka stream lib and DB lib (Knex wrapper), and reuse those wrappers across all services.
 
 ```javascript
-const { trace } = require('@opentelemetry/api');
+const otel = require('@opentelemetry/semantic-conventions')
 
-// Manual approach - avoid if possible
-const span = trace.getActiveSpan();
-if (span) {
-  const spanContext = span.spanContext();
-  
-  logger.info('Processing transfer', {
-    traceId: spanContext.traceId,  // Manual - not ideal
-    spanId: spanContext.spanId,     // Manual - not ideal
-    transferId: transfer.id
-  });
+/** @returns OTelAttributes */
+const outgoingRequestAttributesDto = ({
+  method, url, durationSec, statusCode, errorType, peerService
+}) => ({
+  attributes: {
+    [otel.ATTR_HTTP_REQUEST_METHOD]: method,
+    [otel.ATTR_URL_FULL]: url,
+    [otel.METRIC_HTTP_CLIENT_REQUEST_DURATION]: durationSec,
+    ...(statusCode && { [otel.ATTR_HTTP_RESPONSE_STATUS_CODE]: statusCode }),
+    ...(errorType && { [otel.ATTR_ERROR_TYPE]: errorType }),
+    ...(peerService && { [otel.ATTR_SERVICE_PEER_NAME]: peerService })
+    // peerService - logical service name, must be explicitly provided by caller (not derived from URL hostname)
+    //               think if we should extract it for internal http://... calls from url hostname
+  }
+})
+
+// Usage in http wrapper for outgoing requests:
+const axios = require('axios')
+const { outgoingRequestAttributesDto } = require('./otelDto')
+// ...
+const sendBaseRequest = async (reqOptions) => {
+  const { method, url } = reqOptions
+  const methodUrl = `${method?.toUpperCase()} ${url}`
+  const startTime = Date.now()
+
+  let statusCode
+  let errorType
+
+  try {
+    // ...
+    const response = await axios(reqOptions)
+    statusCode = response?.status
+    
+    return response
+  } catch (error) {
+    statusCode = error.response?.status
+    errorType = error.code
+    // ...
+  } finally {
+    const durationSec = (Date.now() - startTime) / 1000
+    log.info(`[<-- ${statusCode || errorType || ''}] ${methodUrl}  [${durationSec} s]:`, outgoingRequestAttributesDto({
+      method,
+      url,
+      statusCode,
+      durationSec,
+      errorType,
+      peerService
+    }))
+  }
 }
 ```
-
-**Recommendation:** Use auto-instrumentation instead of manual trace context injection.
 
 ## Benefits of Trace Context in Logs
 

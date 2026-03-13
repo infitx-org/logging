@@ -25,15 +25,15 @@ The standard is broken down into the following sections:
 
 ## Quick Reference Summary
 
-| Level | OTel Severity | Production | Use Case | Example |
-|-------|---------------|-----------|----------|---------|
-| FATAL | 21-24 | ✅ Always | Service outage | DB unreachable, panic |
-| ERROR | 17-20 | ✅ Always | Operation failures | Transaction failed |
-| WARN  | 13-16 | ✅ Always | Recoverable issues | Validation failure, retry |
-| INFO  | 9-12  | ✅ Always | Business events | Transfer completed |
+| Level   | OTel Severity | Production | Use Case | Example |
+|---------|---------------|-----------|----------|---------|
+| FATAL   | 21-24 | ✅ Always | Service outage | DB unreachable, panic |
+| ERROR   | 17-20 | ✅ Always | Operation failures | Transaction failed |
+| WARN    | 13-16 | ✅ Always | Recoverable issues | Validation failure, retry |
+| INFO    | 9-12  | ✅ Always | Business events | Transfer completed |
 | VERBOSE | 7-8   | ⚠️ Sampled| Operational noise | Health check, keep-alive |
-| DEBUG | 5-6   | ⚠️ Temporarily | Troubleshooting | Function calls, logic |
-| TRACE | 1-4   | ❌ Rarely | Deep diagnosis | Variable state, loop dump |
+| DEBUG   | 5-6   | ⚠️ Temporarily | Troubleshooting | Function calls, logic |
+| SILLY   | 1-4   | ❌ Rarely | Deep diagnosis | Variable state, loop dump |
 
 
 **Default production setting: INFO level (SeverityNumber >= 9)**
@@ -50,3 +50,5 @@ Specific standards for common scenarios are available in the specific standards 
 *   [HTTP Requests](./scenarios/http_requests.md) - Standard for incoming and outgoing HTTP logging.
 *   [Error Handling](./scenarios/error_handling.md) - Rules for logging exceptions and propagating errors.
 *   [Database Queries](./scenarios/sql_queries.md) - Guidelines for logging SQL and DB interactions.
+*   [Kafka Messaging](./scenarios/kafka_messaging.md) - Standard for Kafka producer and consumer OTel tracing and logging.
+*   [Per-Request Log Override](./scenarios/per_request_log_override.md) - Per-request log level override for production debugging.
