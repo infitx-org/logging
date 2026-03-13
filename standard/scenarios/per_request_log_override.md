@@ -1,4 +1,4 @@
-# Dynamic Tracing Override — Overview
+# Per-Request Log Override — Overview
 
 ## What It Is
 
@@ -8,18 +8,7 @@ Per-request log level override. A single flagged request gets verbose logging ac
 
 ## How the Signal Propagates
 
-Two mechanisms can carry the debug signal across service boundaries.
-
-### Option A: Custom Header (`X-Trace-Enabled` or similar)
-
-Each service reads and forwards a custom HTTP header (e.g., `X-Debug-Level: debug`) to downstream calls.
-
-**Pros:** Can carry a signed token (JWT) for authentication.
-**Cons:** Each service must manually forward the header on outgoing HTTP calls and Kafka messages.
-
-**Real-world examples:** SAP `cf-nodejs-logging-support` uses `SAP-LOG-LEVEL` with a JWT payload; Magento 2 uses `X-Verbose-Log` with a pre-shared secret.
-
-### Option B: W3C Baggage (OTel-native)
+### W3C Baggage (OTel-native)
 
 The W3C `baggage` header carries arbitrary key-value pairs. The OTel SDK propagates it automatically across HTTP (and Kafka, when configured).
 
@@ -42,16 +31,16 @@ The sampled flag controls *span sampling*, not log verbosity. Overloading it con
 
 ### Comparison
 
-| Aspect | Custom Header | OTel Baggage | Sampled Flag |
-|--------|--------------|--------------|-------------|
-| Propagation | Manual (each call site) | Automatic (OTel SDK) | Automatic (OTel SDK) |
-| Kafka support | Manual | Requires baggage propagator config | Automatic |
-| Security | Can embed JWT/HMAC | Plaintext (gateway must validate) | Not designed for this |
-| Semantic fit | Purpose-built | Good fit | Wrong purpose |
+| Aspect | OTel Baggage | Sampled Flag |
+|--------|--------------|-------------|
+| Propagation | Automatic (OTel SDK) | Automatic (OTel SDK) |
+| Kafka support | Requires baggage propagator config | Automatic |
+| Security | Plaintext (gateway must validate) | Not designed for this |
+| Semantic fit | Good fit | Wrong purpose |
 
 ### Recommendation
 
-Use **OTel Baggage** with a dedicated key (e.g., `mojaloop.debug`). For authentication, embed a signed token as the baggage value (combining Option A's security with Option B's propagation).
+Use **OTel Baggage** with a dedicated key (e.g., `mojaloop.debug`). For authentication, embed a signed token (JWT) as the baggage value.
 
 ---
 
@@ -297,7 +286,7 @@ Sets the lowest severity the Logger processes. Configured at startup; cannot cha
 
 ## Implementation Sketch
 
-Combines three recommendations: OTel Baggage for propagation (Option B), JWT signing for security (Security section), and the dual-logger pattern for filtering (Approach 1).
+Combines three recommendations: OTel Baggage for propagation, JWT signing for security (Security section), and the dual-logger pattern for filtering (Approach 1).
 
 ### End-to-end flow
 

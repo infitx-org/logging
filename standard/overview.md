@@ -51,4 +51,4 @@ Specific standards for common scenarios are available in the specific standards 
 *   [Error Handling](./scenarios/error_handling.md) - Rules for logging exceptions and propagating errors.
 *   [Database Queries](./scenarios/sql_queries.md) - Guidelines for logging SQL and DB interactions.
 *   [Kafka Messaging](./scenarios/kafka_messaging.md) - Standard for Kafka producer and consumer OTel tracing and logging.
-*   [Dynamic Tracing Override](./scenarios/dynamic_tracing_override.md) - Per-request log level override for production debugging.
+*   [Per-Request Log Override](./scenarios/per_request_log_override.md) - Per-request log level override for production debugging.

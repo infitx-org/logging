@@ -326,7 +326,7 @@ To support debugging specific transactions in production without increasing the 
     *   **INFO / VERBOSE / DEBUG**: Automatically promoted to be logged even if the service default is set to `WARN` or `INFO`.
     *   *Goal:* Allow end-to-end tracing of a specific request through the entire system at high fidelity while keeping the rest of the system quiet.
 
-> **See also:** [Dynamic Tracing Override](./scenarios/dynamic_tracing_override.md) for implementation details.
+> **See also:** [Per-Request Log Override](./scenarios/per_request_log_override.md) for implementation details.
 
 
 ## Dynamic Log Level Configuration
