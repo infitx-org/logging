@@ -62,7 +62,7 @@ Use OTel's standard attribute names so logs, traces, and metrics correlate witho
 | Domain | Attributes |
 |--------|-----------|
 | HTTP | `http.request.method`, `url.path`, `http.response.status_code` |
-| Database | `db.system`, `db.statement`, `db.operation.name` |
+| Database | `db.system.name`, `db.query.text`, `db.operation.name` |
 | Errors | `error.type`, `error.message`, `error.stack_trace` |
 | Messaging | `messaging.system`, `messaging.destination.name` |
 
