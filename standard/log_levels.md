@@ -80,9 +80,10 @@ logger.error(`Transfer ${transfer.id} processing failed in processTransfer opera
 logger.error(`Database connection to ${dbConfig.host}:${dbConfig.port} failed after ${retryCount} retry attempts: ${error.message}`, {
   operation: 'connectDatabase',
   eventName: 'DatabaseConnectionFailed',
-  'db.host': dbConfig.host,
-  'db.port': dbConfig.port,
-  'db.name': dbConfig.database,
+  'db.system.name': 'mysql',
+  'server.address': dbConfig.host,
+  'server.port': dbConfig.port,
+  'db.namespace': dbConfig.database,
   retryCount: retryCount,
   'exception.type': error.name,
   'exception.message': error.message
@@ -180,23 +181,35 @@ logger.info(`Service ${serviceName} v${version} started successfully on port ${p
 ```
 
 **Do NOT use for:**
-- High frequency operational noise (use VERBOSE)
-- Internal function calls (use DEBUG)
+- Routine operational events (use VERBOSE)
+- Variable values or payload data (use DEBUG)
 
-### VERBOSE - Operational High-Volume Events
+### VERBOSE - Flow Tracing
 
 **When to use:**
+- Handler entry/exit points ("processTransfer...", "processTransfer - done")
+- Operation completions and routine lifecycle events
 - Health checks and keep-alives (often sampled)
-- Minor configuration updates
 - Periodic background tasks that are routine
-- High-frequency API calls that are not "Significant Business Events"
 
 **What to include:**
+- Operation name and flow direction (entering/exiting)
 - Minimal context to verify activity
 - Status of routine check
 
 **Examples:**
 ```javascript
+logger.verbose('processTransfer...', {
+  operation: 'processTransfer',
+  transferId: transfer.id
+});
+
+logger.verbose('processTransfer - done', {
+  operation: 'processTransfer',
+  transferId: transfer.id,
+  'duration.ms': duration
+});
+
 logger.verbose('Health check passed', {
   operation: 'healthCheck',
   uptime: process.uptime(),
@@ -204,32 +217,30 @@ logger.verbose('Health check passed', {
 });
 ```
 
-### DEBUG - Detailed Operational Information
+### DEBUG - Data Inspection
 
 **When to use (in non-production or when debugging):**
-- Function entry/exit with parameters
-- Intermediate calculation results
-- State changes during operation
-- Conditional branch taken
-- Loop iterations (sparingly)
+- Variable values and intermediate calculation results
+- Request/response payloads and body content
+- Configuration values being applied
 - Cache hits/misses
-- Validation steps
+- State dumps for troubleshooting
 
 **What to include:**
-- Detailed context
-- Variable values
-- Flow indicators
-- Internal state
+- Variable values and data content
+- Payload details
+- Configuration state
+- Cache lookup results
 
 **Examples:**
 ```javascript
-logger.debug(`Processing transfer ${transfer.id} validation at step ${step}. Account balance is ${balance} and transfer amount is ${amount}`, {
-  operation: 'validateTransfer',
+logger.debug('transfer payload: ', {
+  operation: 'processTransfer',
   transferId: transfer.id,
-  step: 'checkBalance',
-  'account.balance': balance,
   'transfer.amount': amount,
-  accountId: account.id
+  'transfer.currency': currency,
+  'payer.fspId': payerFsp,
+  'payee.fspId': payeeFsp
 });
 
 logger.debug(`Cache miss for key ${cacheKey}. Fetching participant ${participantId} from database`, {
@@ -242,7 +253,7 @@ logger.debug(`Cache miss for key ${cacheKey}. Fetching participant ${participant
 
 **Do NOT use for:**
 - Sensitive data (passwords, tokens, full card numbers)
-- Excessive logging in tight loops
+- Flow tracing without data (use VERBOSE)
 - Information available elsewhere
 
 ### TRACE - Very Detailed Diagnostic Information
@@ -287,10 +298,10 @@ Can the application continue with degraded functionality?
 Is this a significant business event (Transfer Completed)?
   YES → INFO
 
-Is this a routine operational event (Health Check)?
+Is this a flow trace (handler entry/exit, operation completion, health check)?
   YES → VERBOSE
 
-Is this needed for troubleshooting but not in production?
+Is this data inspection (variable values, payloads, config, cache)?
   YES → DEBUG
 
 Is this only needed for deep diagnostic analysis?
@@ -309,10 +320,10 @@ The complexity and structure of logs depend on their level.
     *   Should describe *what* happened (business events).
     *   Should *not* describe *how* (internal implementation details).
 *   **VERBOSE**: Optional in Production.
-    *   Captures high-frequency noise like health checks.
+    *   Captures flow tracing: handler entry/exit, operation completions, health checks.
     *   Often sampled or disabled to save storage.
 *   **DEBUG**: Disabled by default in Production.
-    *   Contains detailed state changes, full payload (body content), and logic flow.
+    *   Contains data inspection: variable values, full payloads, config values, cache hits/misses.
     *   Intended for developers debugging non-production environments.
 *   **TRACE**: Disabled by default.
     *   Loop iterations, and variable values.

@@ -78,9 +78,10 @@ Following OpenTelemetry conventions, logs should include:
 - `operation`: Function or operation name
 - `duration.ms`: For completed operations (milliseconds)
 - `transferId`, `userId`, `accountId`: Business entity IDs
-- `error.type`: Error class name (for errors)
-- `error.message`: Error message (for errors)
-- `error.stack`: Stack trace (for errors)
+- `error.type`: Error classification (for errors) — resolution order: `err.code` → `err.name` → `"UnknownError"`
+- `exception.type`: Error class name (for errors)
+- `exception.message`: Error message (for errors)
+- `exception.stacktrace`: Stack trace (for errors)
 - `eventName`: For business events (e.g., 'TransferCompleted', 'PaymentFailed')
 
 ### Distinction: Resource vs Attributes
