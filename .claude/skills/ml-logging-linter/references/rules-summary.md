@@ -14,7 +14,7 @@ For detailed examples and traceability, see the full file at the path specified 
 | `no-error-context` | Error | `logger.error(err)` without a descriptive context message |
 | `no-manual-level-check` | Warning | `if (logger.level === 'debug')` instead of built-in level gating |
 | `no-stringified-json` | Warning | `JSON.stringify()` inside log calls (library handles serialization) |
-| `non-standard-attributes` | Warning | camelCase attributes instead of OTel dot notation (`error.message`, `duration.ms`) |
+| `non-standard-attributes` | Warning | camelCase attributes instead of OTel dot notation (e.g., `errorMessage`, `durationMs`; prefer `exception.message`, `duration.ms`) |
 | `semantic-log-levels` | Warning | Level/keyword mismatch (e.g., "failed" at `info`, "retrying" at `error`) |
 | `sensitive-data` | Error | Never-log (passwords, tokens, keys) or mask (accounts → `****1234`); redact at transport level |
 | `sql-semantics` | Warning | SQL logs missing `db.query.text`/`db.system.name`; duration in seconds; never log `db.query.parameter.*` in prod |

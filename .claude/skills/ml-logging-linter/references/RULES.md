@@ -312,12 +312,12 @@ logger.info('Data received', { data });
 
 ### non-standard-attributes
 
-**Description:** Enforces OpenTelemetry naming conventions (dot notation) for attributes like `error.message`, `duration.ms`.
+**Description:** Enforces OpenTelemetry naming conventions (dot notation) for attributes like `exception.message`, `exception.stacktrace`, `duration.ms`.
 
 **Severity:** `Warning`
 
 **Standard Traceability:**
-- `standard/data_model.md`: "Use OTel's standard attribute names... `error.message`, `duration.ms`."
+- `standard/data_model.md`: "Use OTel's standard attribute names... `exception.message`, `exception.stacktrace`, `duration.ms`."
 
 **Examples:**
 
