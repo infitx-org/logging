@@ -80,8 +80,9 @@ logger.error(`Transfer ${transfer.id} processing failed in processTransfer opera
 logger.error(`Database connection to ${dbConfig.host}:${dbConfig.port} failed after ${retryCount} retry attempts: ${error.message}`, {
   operation: 'connectDatabase',
   eventName: 'DatabaseConnectionFailed',
-  'db.host': dbConfig.host,
-  'db.port': dbConfig.port,
+  'db.system.name': 'mysql',
+  'server.address': dbConfig.host,
+  'server.port': dbConfig.port,
   'db.namespace': dbConfig.database,
   retryCount: retryCount,
   'exception.type': error.name,
