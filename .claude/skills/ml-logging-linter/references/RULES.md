@@ -46,14 +46,14 @@ This documentation describes the rules included in `eslint-plugin-mojaloop-loggi
 
 ❌ **Bad**
 ```javascript
-logger.info("Processing transfer", { transferId });
+logger.info("Processing started", { transferId });
 logger.error("Validation failed", { error });
 ```
 
 ✅ **Good**
 ```javascript
-logger.info('processing transfer: ', { transferId });
-logger.error('validation failed for transfer: ', error);
+logger.info('processing transfer', { transferId });
+logger.error(`validation failed for transfer ${transferId}: `, error);
 ```
 
 ---
@@ -328,7 +328,7 @@ logger.info("Done", { duration: 500, errorMsg: err.message });
 
 ✅ **Good**
 ```javascript
-logger.info("Done", { "duration.ms": 500, "error.message": err.message });
+logger.info("Done", { "http.server.request.duration": 0.5, "url.path": "/transfers" });
 ```
 
 ---
